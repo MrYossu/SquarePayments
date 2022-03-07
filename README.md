@@ -1,7 +1,7 @@
 # SquarePayments
 ## Sample code for taking payments with the Square API from Blazor
 
-The basis of this code is from [this GitHub repository](https://github.com/UpwardInfo/BlazorPay/tree/dev), which was the sole example I could find of anyone trying to use Square's API from Blazor.
+The basis of this code is from [this GitHub repository](https://github.com/UpwardInfo/BlazorPay/tree/dev), which was the sole example I could find of anyone trying to use [Square's](https://squareup.com/) API from Blazor.
 
 The code there is in the form of a sandalone component, which is meant for reuse. This repository shows my usage of that code, but integrating the component in the page where I was using it.
 
