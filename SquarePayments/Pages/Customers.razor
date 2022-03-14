@@ -16,7 +16,7 @@
 @if (CustomerList.Any()) {
   <ul>
     @foreach (Customer c in CustomerList) {
-      <li>@c.GivenName @c.FamilyName (@c.EmailAddress)</li>
+      <li>(@c.Id) @c.GivenName @c.FamilyName (@c.EmailAddress)</li>
     }
   </ul>
 }

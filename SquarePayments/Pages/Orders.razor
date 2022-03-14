@@ -8,7 +8,116 @@
 <PageTitle>Orders</PageTitle>
 
 <h1>Orders</h1>
+<button @onclick="ListOrders">List orders</button>
+<p>@OrderListMsg</p>
+
+@if (OrderList.Any()) {
+  <table class="table">
+    <tr>
+      <th>Id</th>
+      <th>Created</th>
+      <th>Customer Id</th>
+      <th style="vert-align: top; vertical-align: top">Items</th>
+      <th>Total (p)</th>
+    </tr>
+    @foreach (Order order in OrderList) {
+      <tr>
+        <td>@order.Id</td>
+        <td>@order.CreatedAt</td>
+        <td>
+          @{
+            Customer? customer = Customers.FirstOrDefault(c => c.Id == order.CustomerId);
+            @(customer == null ? $"(unknown customer {order.CustomerId})" : $"{customer.GivenName} {customer.FamilyName}")
+          }
+        </td>
+        <td>@order.LineItems.Select(i => $"{i.Quantity} of {i.Name} @ {i.BasePriceMoney.Amount} each").JoinStr()</td>
+        <td>@order.TotalMoney.Amount (@order.TotalMoney.Currency)</td>
+      </tr>
+    }
+  </table>
+}
+
+<hr />
+<h2>Create an order</h2>
+<p><strong>Note:</strong> Need to add a form where you can pick items and quantities. For now, we'll just pick the number of bars of chocolate (what else would you want to buy?)</p>
+<p>Also, this should be built with an EditForm and Blazor input components, not plain HTML elements.</p>
+<p>
+  Customer:
+  <select @onchange="@(e => CustomerId = e.Value.ToString() ?? "")">
+    @foreach (Customer c in Customers) {
+      <option value="@c.Id">@c.GivenName @c.FamilyName</option>
+    }
+  </select>
+</p>
+
+<p>
+  Qty:
+  <select @onchange="@(e => Qty = e.Value.ToString() ?? "1")">
+    <option value="1" selected="selected">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+  </select>
+</p>
+
+<button @onclick="@CreateOrder">Create order</button>
+<p>@NewOrderMsg</p>
 
 @code {
+  private SquareClient _squareClient = null!;
+  public List<Order> OrderList { get; set; } = new();
+  public string OrderListMsg { get; set; } = "";
+
+  public List<Customer> Customers { get; set; } = new();
+  public string CustomerId { get; set; } = "";
+  public string Qty { get; set; } = "1";
+  public Order NewOrder { get; set; } = null!;
+  public string NewOrderMsg { get; set; } = "";
+
+  protected override async Task OnInitializedAsync() {
+    _squareClient = _squareHelper.GetSquareClient();
+    Customers = (await _squareClient.CustomersApi.ListCustomersAsync()).Customers.ToList();
+  }
+
+  private async Task ListOrders() {
+    OrderListMsg = "Please wait...";
+    OrderList = (await _squareClient.OrdersApi.SearchOrdersAsync(new SearchOrdersRequest.Builder()
+      .LocationIds(new List<string> { _squareHelper.LocationId })
+      .Limit(10)
+      .Build())).Orders.ToList();
+    OrderListMsg = "";
+  }
+
+  private async Task CreateOrder() {
+    NewOrderMsg = "Please wait...";
+    List<OrderLineItem> lineItems = new() {
+      new OrderLineItem.Builder(Qty)
+        .Name("Bar of chocolate (small)")
+        .BasePriceMoney(new Money.Builder()
+          .Amount(199L)
+          .Currency("GBP")
+          .Build())
+        .Build()
+    };
+
+    Order order = new Order.Builder(_squareHelper.LocationId)
+      .CustomerId(CustomerId)
+      .LineItems(lineItems)
+      .Build();
+
+    CreateOrderRequest body = new CreateOrderRequest.Builder()
+      .Order(order)
+      .IdempotencyKey(Guid.NewGuid().ToString())
+      .Build();
+
+    try {
+      CreateCheckoutResponse response = await _squareClient.CheckoutApi.CreateCheckoutAsync(_squareHelper.LocationId, new CreateCheckoutRequest.Builder(Guid.NewGuid().ToString(), body).Build());
+      NewOrderMsg = $"Success, order Id: {response.Checkout.Order.Id}";
+    }
+    catch (ApiException ex) {
+      NewOrderMsg = $"Ex: {string.Join("", ex.Errors.Select(e => $"({e.Field}) {e.Detail}"))}";
+    }
+  }
 
 }
