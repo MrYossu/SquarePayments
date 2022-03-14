@@ -1,0 +1,39 @@
+﻿@page "/Customers"
+@using Pixata.Extensions
+@using Square
+@using Square.Exceptions
+@using Square.Models
+@using SquarePayments.Data
+@inject SquareHelper _squareHelper
+<PageTitle>Customers</PageTitle>
+
+<h1>Customers</h1>
+
+<button @onclick="@ListCustomers">Customers</button>
+
+<div class="text-danger">@Msg</div>
+
+@if (CustomerList.Any()) {
+  <ul>
+    @foreach (Customer c in CustomerList) {
+      <li>@c.GivenName @c.FamilyName</li>
+    }
+  </ul>
+}
+
+@code {
+  public List<Customer> CustomerList { get; set; } = new();
+  public string Msg { get; set; } = "";
+
+  private async Task ListCustomers() {
+    SquareClient squareClient = _squareHelper.GetSquareClient();
+    try {
+      CustomerList = (await squareClient.CustomersApi.ListCustomersAsync()).Customers.ToList();
+    } catch (ApiException ex) {
+      Msg = $"{ex.GetType().Name}: {ex.Errors.Select(e => $"({e.Category}) {e.Detail}").JoinStr()}";
+    } catch (Exception ex) {
+      Msg = $"{ex.GetType().Name}: {ex.Message}";
+    }
+  }
+
+}

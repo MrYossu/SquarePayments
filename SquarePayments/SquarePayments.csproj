@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Pixata.Extensions" Version="1.18.0" />
     <PackageReference Include="Square" Version="17.2.0" />
   </ItemGroup>
 
