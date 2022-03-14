@@ -16,22 +16,22 @@
     <tr>
       <th>Id</th>
       <th>Created</th>
-      <th>Customer Id</th>
+      <th>Customer name/Id</th>
       <th style="vert-align: top; vertical-align: top">Items</th>
       <th>Total (p)</th>
     </tr>
     @foreach (Order order in OrderList) {
       <tr>
         <td>@order.Id</td>
-        <td>@order.CreatedAt</td>
+        <td>@DateTime.Parse(order.CreatedAt).ToLongDateString() @DateTime.Parse(order.CreatedAt).ToLongTimeString()</td>
         <td>
           @{
             Customer? customer = Customers.FirstOrDefault(c => c.Id == order.CustomerId);
-            @(customer == null ? $"(unknown customer {order.CustomerId})" : $"{customer.GivenName} {customer.FamilyName}")
+            @(customer == null ? order.CustomerId : $"{customer.GivenName} {customer.FamilyName}")
           }
         </td>
-        <td>@order.LineItems.Select(i => $"{i.Quantity} of {i.Name} @ {i.BasePriceMoney.Amount} each").JoinStr()</td>
-        <td>@order.TotalMoney.Amount (@order.TotalMoney.Currency)</td>
+        <td>@order.LineItems.Select(i => $"{i.Quantity} of {i.Name} @ {(((i.BasePriceMoney.Amount ?? 0L) / 100.0).ToString("C2"))} each").JoinStr()</td>
+        <td style="text-align: right">@(((order.TotalMoney.Amount ?? 0L) / 100.0).ToString("C2"))</td>
       </tr>
     }
   </table>
@@ -82,6 +82,7 @@
 
   private async Task ListOrders() {
     OrderListMsg = "Please wait...";
+    OrderList = new();
     OrderList = (await _squareClient.OrdersApi.SearchOrdersAsync(new SearchOrdersRequest.Builder()
       .LocationIds(new List<string> { _squareHelper.LocationId })
       .Limit(10)
