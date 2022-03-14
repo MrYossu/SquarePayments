@@ -9,7 +9,7 @@ public class SquareHelper {
   public const string SquareLocationId = "SquareLocationId";
 
   public SquareClient GetSquareClient() => new SquareClient.Builder()
-    .Environment(Square.Environment.Production)
+    .Environment(Square.Environment.Sandbox)
     .AccessToken(Environment.GetEnvironmentVariable(SquareAccessToken))
     .Build();
 

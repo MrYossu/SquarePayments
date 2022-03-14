@@ -12,7 +12,14 @@
 <h1>Take payments with Square</h1>
 
 <div id="@_elementId" class="w-50"></div>
-<div><input value="@_message" placeholder="Enter the payment description" style="width: 300px" class="form-control mb-2" /></div>
+<div><input @bind-value="@_message" placeholder="Enter the payment description" style="width: 300px" class="form-control mb-2" /></div>
+<div>
+  <select value="@Amount" @onchange="@(v => Amount = Convert.ToInt64(v.Value))" class="form-control" style="width: 250px">
+    <option value="199" selected="selected">Small bar of chocolate &pound;1.99</option>
+    <option value="299">Big bar of chocolate &pound;2.99p</option>
+    <option value="399">Massive bar of chocolate &pound;3.99p</option>
+  </select>
+</div>
 <button @onclick="@Pay">Pay</button>
 
 @if (Msgs.Any()) {
@@ -31,7 +38,8 @@
   private readonly string _elementId = "SquareCardPayment" + Guid.NewGuid().ToString("N");
   private bool _payEnabled;
   public List<string> Msgs { get; set; } = new() { "Loading...." };
-  private readonly string _message = "";
+  public long Amount { get; set; } = 99;
+  private string _message = "";
 
   protected override async Task OnAfterRenderAsync(bool firstRender) {
     Msgs.Clear();
@@ -59,7 +67,8 @@
     SquareClient squareClient = _squareHelper.GetSquareClient();
 
     Money amountMoney = new Money.Builder()
-      .Amount(299L) // Amount is in pennies
+  // TODO AYS - Amount not working. Do we just need to restart?
+      .Amount(Amount) // Amount is in pennies
       .Currency("GBP")
       .Build();
 
