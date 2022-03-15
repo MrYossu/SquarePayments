@@ -1,7 +1,84 @@
 ﻿@page "/OrderAndPay"
+@using Square.Models
 
 <h1>Order &amp; pay</h1>
 
-@code {
+<div class="container">
+  <div class="row mb-2">
+    <div class="col-3">Customer</div>
+    <div class="col-6">
+      <select class="form-control" @onchange="@(e => CustomerId = e.Value.ToString() ?? "")">
+        @foreach (Customer c in Customers) {
+          <option value="@c.Id">@c.GivenName @c.FamilyName</option>
+        }
+      </select>
+    </div>
+  </div>
 
-}
+  @if (SquareLoaded && Customers.Any()) {
+    <div class="row mb-2">
+      <div class="col-3">Small chocolate bars - &pound;1.00 each</div>
+      <div class="col-6">
+        <select class="form-control" @onchange="@(e => UpdateTotal('s', e.Value.ToString() ?? ""))">
+          <option value="0" selected="selected">0</option>
+          @for (int i = 1; i < 6; i++) {
+            <option value="@i">@i</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="row mb-2">
+      <div class="col-3">Medium chocolate bars - &pound;2.00 each</div>
+      <div class="col-6">
+        <select class="form-control" @onchange="@(e => UpdateTotal('m', e.Value.ToString() ?? ""))">
+          <option value="0" selected="selected">0</option>
+          @for (int i = 1; i < 6; i++) {
+            <option value="@i">@i</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="row mb-2">
+      <div class="col-3">Enormous chocolate bars - &pound;3.50 each</div>
+      <div class="col-6">
+        <select class="form-control" @onchange="@(e => UpdateTotal('e', e.Value.ToString() ?? ""))">
+          <option value="0" selected="selected">0</option>
+          @for (int i = 1; i < 6; i++) {
+            <option value="@i">@i</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="row mb-2">
+      <div class="col-3"><strong>Total</strong></div>
+      <div class="col-6"><strong>@Total.ToString("C2")</strong></div>
+    </div>
+  }
+
+  <div class="row mb-2">
+    <div class="col-3"></div>
+    <div class="col-9">
+      <div id="@_elementId" class="w-50"></div>
+    </div>
+  </div>
+
+  @if (SquareLoaded && Customers.Any()) {
+    <div class="row mb-2">
+      <div class="col-3"></div>
+      <div class="col-2"><button class="btn btn-primary" @onclick="Pay">Pay</button></div>
+    </div>
+
+    <div class="row mb-2">
+      <div class="col-3"></div>
+      <div class="col-9">@PaymentMsg</div>
+    </div>
+  } else {
+    <div class="row mb-2">
+      <div class="col-3"></div>
+      <div class="col-9">Please wait while we load the data...</div>
+    </div>
+  }
+</div>
