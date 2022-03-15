@@ -14,3 +14,25 @@
 </ul>
 
 <p><strong>Note:</strong> You will need to restart Visual Studio <strong>after</strong> setting these variables, as VS only reads the environment when it starts, not when your application starts.</p>
+
+<h2>Explanation of what's in this project</h2>
+<p>The code shown here is the result of me experimenting with the Square API. I do not make any claims that this is th eonly way to use it, nor even that it's the best way to use it. This is what I managed to get working. If you have any (polite!) comments on my code, please feel free to open an issue on the <a href="https://github.com/MrYossu/SquarePayments" target="_blank">GitHub repository</a>.</p>
+
+<p>Caveat aside, here is a brief explanation of the pages in the project:</p>
+
+<dl>
+  <dt>Index</dt>
+  <dd>Duh, this page!</dd>
+
+  <dt>Payments</dt>
+  <dd>This was my first attempt at taking payments, and was based on some code written by <a href="https://github.com/UpwardInfo/BlazorPay/tree/dev" target="_blank">Alfred Zaki</a>. It does nothing more than take the payment, it does not create customers or orders, etc. This approach would be fine if you were dealing with a lot of small transactions from a lot of different people, but probably wouldn't be so good for an ecommerce site.</dd>
+  
+  <dt>Customers</dt>
+  <dd>List customers, and create a new one. Fairly simple and self-explanatory.</dd>
+  
+  <dt>Orders</dt>
+  <dd>List and create orders. The one thing that this page doesn't do is take payments. It just allows you to create an order, which on its own probably isn't so useful. See the next page...</dd>
+  
+  <dt>Order &amp; pay</dt>
+  <dd>This is probably what most people would need. You can create an order, and have the customer pay for it. This is currently a work in progress.</dd>
+</dl>
