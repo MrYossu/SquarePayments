@@ -9,11 +9,26 @@
 <div class="text-danger">@CustomerListMsg</div>
 
 @if (CustomerList.Any()) {
-  <ul>
+  <table class="table table-sm">
+    <tr>
+      <th>Id</th>
+      <th>GivenName</th>
+      <th>FamilyName</th>
+      <th>EmailAddress</th>
+      <th># Cards</th>
+      <th> </th>
+    </tr>
     @foreach (Customer c in CustomerList) {
-      <li>(@c.Id) @c.GivenName @c.FamilyName (@c.EmailAddress)</li>
+      <tr>
+        <td>@c.Id</td>
+        <td>@c.GivenName</td>
+        <td>@c.FamilyName</td>
+        <td>@c.EmailAddress</td>
+        <td style="text-align: center">@(c.Cards?.Any() ?? false ? c.Cards.Count : "0") </td> @* TODO AYS - Show the card details *@
+        <td><button class="btn-sm" onclick="@(() => DeleteCustomer(c.Id))">Delete</button></td>
+      </tr>
     }
-  </ul>
+  </table>
 }
 
 <fieldset style="border-top: 1px solid #000" class="mt-3">

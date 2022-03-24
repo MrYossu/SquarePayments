@@ -11,6 +11,7 @@ namespace SquarePayments.Pages;
 public partial class Customers : IAsyncDisposable {
   [Inject]
   public IJSRuntime _js { get; set; }
+
   [Inject]
   public SquareHelper _squareHelper { get; set; }
 
@@ -33,7 +34,8 @@ public partial class Customers : IAsyncDisposable {
         _squareJs = await _js.InvokeAsync<IJSObjectReference>("import", "/Square.js");
         _squareCard = await _squareJs.InvokeAsync<IJSObjectReference>("addSquareCardPayment", _elementId, _squareHelper.AppId, _squareHelper.LocationId);
         StateHasChanged();
-      } catch (Exception ex) {
+      }
+      catch (Exception ex) {
         StateHasChanged();
       }
     }
@@ -83,11 +85,24 @@ public partial class Customers : IAsyncDisposable {
             .ReferenceId($"{Customer.FirstName}{Customer.Surname}")
             .Build())
         .Build();
-      CreateCardResponse cardResponse= await _squareClient.CardsApi.CreateCardAsync(cardRequest);
+      CreateCardResponse cardResponse = await _squareClient.CardsApi.CreateCardAsync(cardRequest);
       NewCustomerMsg = "Success";
     }
     catch (ApiException ex) {
       NewCustomerMsg = $"Error: {string.Join("", ex.Errors.Select(e => $"({e.Field}) {e.Detail}"))}";
+    }
+  }
+
+  private async Task DeleteCustomer(string id) {
+    try {
+      await _squareClient.CustomersApi.DeleteCustomerAsync(id);
+      NewCustomerMsg = "Deleted";
+    }
+    catch (ApiException ex) {
+      NewCustomerMsg = $"Error: {string.Join("", ex.Errors.Select(e => $"({e.Field}) {e.Detail}"))}";
+    }
+    catch (Exception ex) {
+      NewCustomerMsg = $"Error: {ex.Message}";
     }
   }
 
@@ -96,5 +111,4 @@ public partial class Customers : IAsyncDisposable {
       await _squareJs.DisposeAsync();
     }
   }
-    
 }
