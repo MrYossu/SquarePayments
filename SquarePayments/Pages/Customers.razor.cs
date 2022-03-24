@@ -73,7 +73,10 @@ public partial class Customers : IAsyncDisposable {
     try {
       CreateCustomerResponse customerResponse = await _squareClient.CustomersApi.CreateCustomerAsync(customerRequest);
       string sourceId = await _squareJs.InvokeAsync<string>("getSquareCardToken", _squareCard);
-      CreateCardRequest cardRequest = new CreateCardRequest.Builder(Guid.NewGuid().ToString(), sourceId,
+      // We should pass sourceId as the second parameter below, but it throws an error when we do that.
+      // Actually, it throws an error even with the sandbox source Id (see bullet point 2b in section 1.3
+      // of the subscription doc https://developer.squareup.com/docs/subscriptions-api/walkthrough#step-13-create-customers-in-the-sellers-customer-directory)
+      CreateCardRequest cardRequest = new CreateCardRequest.Builder(Guid.NewGuid().ToString(), "cnon:card-nonce-ok",
           new Card.Builder()
             .CardholderName($"{Customer.FirstName} {Customer.Surname}")
             .BillingAddress(new Address.Builder()
