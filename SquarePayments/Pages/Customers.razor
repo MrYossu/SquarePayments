@@ -1,10 +1,5 @@
 ﻿@page "/Customers"
-@using Pixata.Extensions
-@using Square
-@using Square.Exceptions
 @using Square.Models
-@using SquarePayments.Data
-@inject SquareHelper _squareHelper
 <PageTitle>Customers</PageTitle>
 
 <h1>Customers</h1>
@@ -58,6 +53,10 @@
     </div>
     <div class="row">
       <div class="col-2"> </div>
+      <div id="@_elementId" class="col-6"></div>
+    </div>
+    <div class="row">
+      <div class="col-2"> </div>
       <div class="col-2"><button type="submit" style="width: 100px">Create</button></div>
     </div>
   </EditForm>
@@ -69,52 +68,3 @@
     margin-bottom: 5px;
   }
 </style>
-
-@code {
-  private SquareClient _squareClient = null!;
-  public CustomerDto Customer { get; set; } = new();
-  public List<Customer> CustomerList { get; set; } = new();
-  public string CustomerListMsg { get; set; } = "";
-
-  protected override void OnInitialized() =>
-    _squareClient = _squareHelper.GetSquareClient();
-
-  private async Task ListCustomers() {
-    try {
-      CustomerList = (await _squareClient.CustomersApi.ListCustomersAsync()).Customers.ToList();
-    }
-    catch (ApiException ex) {
-      CustomerListMsg = $"{ex.GetType().Name}: {ex.Errors.Select(e => $"({e.Category}) {e.Detail}").JoinStr()}";
-    }
-    catch (Exception ex) {
-      CustomerListMsg = $"{ex.GetType().Name}: {ex.Message}";
-    }
-  }
-
-  public string NewCustomerMsg { get; set; } = "";
-
-  private async Task CreateCustomer() {
-    NewCustomerMsg = "Please wait...";
-    CreateCustomerRequest body = new CreateCustomerRequest.Builder()
-      .IdempotencyKey(Guid.NewGuid().ToString())
-      .GivenName(Customer.FirstName)
-      .FamilyName(Customer.Surname)
-      .EmailAddress(Customer.Email)
-      .Address(new Address.Builder()
-        .AddressLine1(Customer.Address1)
-        .AddressLine2(Customer.Address2)
-        .PostalCode(Customer.Postcode)
-        .Country(Customer.Country)
-        .Build())
-      .PhoneNumber(Customer.Phone)
-      .Build();
-    try {
-      CreateCustomerResponse result = await _squareClient.CustomersApi.CreateCustomerAsync(body);
-      NewCustomerMsg = "Success";
-    }
-    catch (ApiException ex) {
-      NewCustomerMsg = $"Ex: {string.Join("", ex.Errors.Select(e => e.Detail))}";
-    }
-  }
-
-}
