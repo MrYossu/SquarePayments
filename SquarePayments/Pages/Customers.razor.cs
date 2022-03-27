@@ -57,20 +57,21 @@ public partial class Customers : IAsyncDisposable {
 
   private async Task CreateCustomer() {
     NewCustomerMsg = "Please wait...";
-    CreateCustomerRequest customerRequest = new CreateCustomerRequest.Builder()
-      .IdempotencyKey(Guid.NewGuid().ToString())
-      .GivenName(Customer.FirstName)
-      .FamilyName(Customer.Surname)
-      .EmailAddress(Customer.Email)
-      .Address(new Address.Builder()
+    try {
+      Address? address = new Address.Builder()
         .AddressLine1(Customer.Address1)
         .AddressLine2(Customer.Address2)
         .PostalCode(Customer.Postcode)
         .Country(Customer.Country)
-        .Build())
-      .PhoneNumber(Customer.Phone)
-      .Build();
-    try {
+        .Build();
+      CreateCustomerRequest customerRequest = new CreateCustomerRequest.Builder()
+        .IdempotencyKey(Guid.NewGuid().ToString())
+        .GivenName(Customer.FirstName)
+        .FamilyName(Customer.Surname)
+        .EmailAddress(Customer.Email)
+        .Address(address)
+        .PhoneNumber(Customer.Phone)
+        .Build();
       CreateCustomerResponse customerResponse = await _squareClient.CustomersApi.CreateCustomerAsync(customerRequest);
       string sourceId = await _squareJs.InvokeAsync<string>("getSquareCardToken", _squareCard);
       // We should pass sourceId as the second parameter below, but it throws an error when we do that.
@@ -79,11 +80,7 @@ public partial class Customers : IAsyncDisposable {
       CreateCardRequest cardRequest = new CreateCardRequest.Builder(Guid.NewGuid().ToString(), "cnon:card-nonce-ok",
           new Card.Builder()
             .CardholderName($"{Customer.FirstName} {Customer.Surname}")
-            .BillingAddress(new Address.Builder()
-              .AddressLine1(Customer.Address1)
-              .PostalCode(Customer.Postcode)
-              .Country("GB")
-              .Build())
+            .BillingAddress(address)
             .CustomerId(customerResponse.Customer.Id)
             .ReferenceId($"{Customer.FirstName}{Customer.Surname}")
             .Build())
