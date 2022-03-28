@@ -1,5 +1,6 @@
 ﻿@page "/Customers"
 @using Square.Models
+@using Pixata.Extensions
 <PageTitle>Customers</PageTitle>
 
 <h1>Customers</h1>
@@ -15,7 +16,7 @@
       <th>GivenName</th>
       <th>FamilyName</th>
       <th>EmailAddress</th>
-      <th># Cards</th>
+      <th>Card(s)</th>
       <th> </th>
     </tr>
     @foreach (Customer c in CustomerList) {
@@ -24,7 +25,7 @@
         <td>@c.GivenName</td>
         <td>@c.FamilyName</td>
         <td>@c.EmailAddress</td>
-        <td style="text-align: center">@(c.Cards?.Any() ?? false ? c.Cards.Count : "0") </td> @* TODO AYS - Show the card details *@
+        <td style="text-align: center">@(c.Cards?.Any() ?? false ? c.Cards.Select(card=>$"{card.CardBrand} ends in {card.Last4}").JoinStr() : "")</td>
         <td><button class="btn-sm" onclick="@(() => DeleteCustomer(c.Id))">Delete</button></td>
       </tr>
     }
@@ -55,8 +56,9 @@
       <div class="col-8"><InputText @bind-Value="@Customer.Address2" /></div>
     </div>
     <div class="row">
-      <label class="col-2">Postcode</label>
-      <div class="col-8"><InputText @bind-Value="@Customer.Postcode" /></div>
+      <label class="col-2">Postcode <span class="text-danger">(*)</span></label>
+      <div class="col-2"><InputText @bind-Value="@Customer.Postcode" /></div>
+      <div class="col-4 text-danger">This MUST match the postcode you enter in the card element below</div>
     </div>
     <div class="row">
       <label class="col-2">Country</label>
