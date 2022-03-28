@@ -25,7 +25,7 @@
         <td>@c.GivenName</td>
         <td>@c.FamilyName</td>
         <td>@c.EmailAddress</td>
-        <td style="text-align: center">@(c.Cards?.Any() ?? false ? c.Cards.Select(card=>$"{card.CardBrand} ends in {card.Last4}").JoinStr() : "")</td>
+        <td>@(c.Cards?.Any() ?? false ? c.Cards.Select(card=>$"{card.CardBrand} ends in {card.Last4}").JoinStr() : "")</td>
         <td><button class="btn-sm" onclick="@(() => DeleteCustomer(c.Id))">Delete</button></td>
       </tr>
     }
