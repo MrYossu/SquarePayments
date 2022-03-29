@@ -4,16 +4,31 @@
 The pages here show how to manage customers, take payments, etc in a Blazor app, using the Square API.
 
 ## Set up
-In order to use this code, you need an account with Square (duh), and need to set three environment variables on your machine. See the home page of the app for details. In practice, you would use `appSettings.json`, Azure secrets or the like. I used environment variables so that I could commit the code without having to remember to blank out my credentials each time.
+In order to use this code, you need an account with Square (duh). Then you need to create the data object and register both it and the helper class as follows...
 
-The basis of the code on the payment page is from [Alfred Zaki's GitHub repository](https://github.com/UpwardInfo/BlazorPay/tree/dev), which was the sole example I could find of anyone trying to use [Square's](https://squareup.com/) API from Blazor. I built on that (thanks Alfred) to produce this sample.
+```c#
+// .NET5 - Goes in Startup.cs
+SquareData squareData = Configuration.GetSection("Square").Get<SquareData>();
+services.AddSingleton(squareData);
+services.AddTransient<SquareHelper>();
 
-The code there is in the form of a sandalone component, which is meant for reuse. This repository shows my usage of that code, but integrating the component in the page where I was using it.
+// .NET6 - Goes in Program.cs
+SquareData SquareData = builder.Configuration.GetSection("Square").Get<SquareData>();
+builder.Services.AddSingleton(SquareData);
+builder.Services.AddTransient<SquareHelper>();
+```
 
-I made a couple of small changes to the original code...
+Note that the sample code in the repository uses three environment variables so that I could commit the code without having to remember to blank out my credentials each time (see the home page of the project for details of how to set these up). In practice, you would use `appSettings.json`, Azure secrets or the like. If you are playing with this code, you could just hard-code the data as follows (all data created by me randomly bashing the keyboard!)...
 
-- In order to support both sandbox and production, I moved the code that imports Square's JavaScript into the main code file. This means that I can use the same `Square.js` file in both modes.
-- The sample usage code that Alfred showed (see [this issue](https://github.com/UpwardInfo/BlazorPay/issues/1)) referenced a `SquModels` class that wouldn't resolve for me. I had to change things like `new SquModels.Money` to just `new Money` to get it to compile.
+```c#
+SquareData data = new() {
+  Environment = "sandbox",
+  AccessToken = "abcdefgh12345",
+  AppId = "93879837492378429378",
+  LocationId = "2u289d9283jd92dj8923d8"
+};
+```
+
 
 ## Caveat
 The code here is just to show how it can be done. In practice, you would want to make some improvements. Obvious ones are...
@@ -48,3 +63,14 @@ List and create orders. The one thing that this page doesn't do is take payments
 
 ### Order & pay
 Create an order, and have the customer pay for it.
+
+## Acknowledgements
+The basis of the code on the payment page is from [Alfred Zaki's GitHub repository](https://github.com/UpwardInfo/BlazorPay/tree/dev), which was the sole example I could find of anyone trying to use [Square's](https://squareup.com/) API from Blazor. I built on that (thanks Alfred) to produce this sample.
+
+The code there is in the form of a sandalone component, which is meant for reuse. This repository shows my usage of that code, but integrating the component in the page where I was using it.
+
+I made a couple of small changes to the original code...
+
+- In order to support both sandbox and production, I moved the code that imports Square's JavaScript into the main code file. This means that I can use the same `Square.js` file in both modes.
+- The sample usage code that Alfred showed (see [this issue](https://github.com/UpwardInfo/BlazorPay/issues/1)) referenced a `SquModels` class that wouldn't resolve for me. I had to change things like `new SquModels.Money` to just `new Money` to get it to compile.
+

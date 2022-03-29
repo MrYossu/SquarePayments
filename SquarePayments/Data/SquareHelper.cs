@@ -16,15 +16,9 @@ public class SquareHelper {
 
   public static string JsUri = "/Square.js";
 
-  public SquareHelper(IJSRuntime js) {
+  public SquareHelper(SquareData data, IJSRuntime js) {
     _js = js;
-    // NOTE - I am using environment variables for convenience here. In a real app you would use appSettings.json, Azure secrets or the like
-    _data = new() {
-      Environment = "sandbox",
-      AccessToken = Environment.GetEnvironmentVariable("SquareAccessToken") ?? "",
-      AppId = Environment.GetEnvironmentVariable("SquareAppId") ?? "",
-      LocationId = Environment.GetEnvironmentVariable("SquareLocationId") ?? ""
-    };
+    _data = data;
     _client = new SquareClient.Builder()
       .Environment(_data.Environment == "production" ? Square.Environment.Production : Square.Environment.Sandbox)
       .AccessToken(_data.AccessToken)
