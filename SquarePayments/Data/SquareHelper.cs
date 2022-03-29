@@ -91,6 +91,9 @@ public class SquareHelper {
     return subscriptionResponse.Subscription.Id;
   }
 
+  public async Task<DeleteCustomerResponse> DeleteCustomer(string id) =>
+    await _client.CustomersApi.DeleteCustomerAsync(id);
+  
   #endregion
 
   #region Deprecated

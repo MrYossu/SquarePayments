@@ -11,7 +11,7 @@ public partial class Customers {
   [Inject]
   public SquareHelper SquareHelper { get; set; } = null!;
 
-  // TODO AYS - Move GetPlans, GetCustomers and DeleteCustomer to the helper and remove this
+  // TODO AYS - Move GetPlans and GetCustomers to the helper and remove this
   private SquareClient _client = null!;
   private readonly string _elementId = "SquareCardPayment" + Guid.NewGuid().ToString("N");
   public CustomerDto Customer { get; set; } = new();
@@ -61,11 +61,8 @@ public partial class Customers {
     NewCustomerMsg = "Please wait...";
     try {
       Address address = SquareHelper.BuildAddress(Customer.Address1, Customer.Address2, Customer.Postcode, Customer.Country);
-      NewCustomerMsg += ". Got address";
       string customerId = await SquareHelper.CreateSquareCustomer(Customer.FirstName, Customer.Surname, Customer.Email, Customer.Phone, address);
-      NewCustomerMsg += ". Created customer";
       string cardId = await SquareHelper.CreateSquareCard(Customer.FirstName, Customer.Surname, address, customerId);
-      NewCustomerMsg += ". Created card";
       string subscriptionId = await SquareHelper.CreateSquareSubscription(customerId, cardId, Customer.PlanId);
       NewCustomerMsg = $"Success: Id {subscriptionId}";
     }
@@ -79,7 +76,7 @@ public partial class Customers {
 
   private async Task DeleteCustomer(string id) {
     try {
-      await _client.CustomersApi.DeleteCustomerAsync(id);
+      DeleteCustomerResponse response = await SquareHelper.DeleteCustomer(id);
       NewCustomerMsg = "Deleted";
     }
     catch (ApiException ex) {
