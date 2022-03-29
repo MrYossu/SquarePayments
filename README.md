@@ -29,6 +29,34 @@ SquareData data = new() {
 };
 ```
 
+Once that is done, you can inject a `SquareHelper` into your class and you are (mostly) ready to go. If you want to take card payments on the page, you will also need to initialise the card element. You need a `string` property for the element Id...
+
+```c#
+private readonly string _elementId = "SquareCardPayment" + Guid.NewGuid().ToString("N");
+```
+
+You don't ahve to use a `Guid`, just make sure that the Id is unique. Then, you need to add a `<div>` to hold the card element...
+
+```html
+<div id="@_elementId"></div>
+```
+
+Finally, you need to initialise the card element...
+
+```c#
+  protected override async Task OnAfterRenderAsync(bool firstRender) {
+    if (firstRender) {
+      try {
+        await SquareHelper.SetUpCard(_elementId);
+      }
+      catch (Exception ex) {
+        Msg = $"Exception: {ex.Message}";
+      }
+    }
+  }
+```
+
+The code above assumes you have a `string` property named `Msg` in your component, and ensures that if anything goes wrong, you see what it was (assuming you bind `Msg` to something in the view of course). In practice, I find that once you have the code set up, you can do away with this, but it doesn't harm to keep it. If you want to be professional, you would use some better way of informing the user that the card payment facility was unavailable. As with all the other code in this project, this is to demonstrate the concepts, so there is always room for improvement.
 
 ## Caveat
 The code here is just to show how it can be done. In practice, you would want to make some improvements. Obvious ones are...
