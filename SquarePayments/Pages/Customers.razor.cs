@@ -43,17 +43,8 @@ public partial class Customers {
     CatalogObjects = (response.Objects ?? new List<CatalogObject>()).ToList();
   }
 
-  private async Task ListCustomers() {
-    try {
-      CustomerList = (await _client.CustomersApi.ListCustomersAsync()).Customers.ToList();
-    }
-    catch (ApiException ex) {
-      CustomerListMsg = $"{ex.GetType().Name}: {ex.Errors.Select(e => $"({e.Category}) {e.Detail}").JoinStr()}";
-    }
-    catch (Exception ex) {
-      CustomerListMsg = $"{ex.GetType().Name}: {ex.Message}";
-    }
-  }
+  private async Task ListCustomers() =>
+    CustomerList = await SquareHelper.GetAllCustomers();
 
   public string NewCustomerMsg { get; set; } = "";
 

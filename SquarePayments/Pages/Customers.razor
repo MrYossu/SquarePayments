@@ -74,8 +74,8 @@
       <div class="col-8">
         <InputSelect @bind-Value="@Customer.PlanId">
           @foreach (CatalogObject plan in CatalogObjects) {
-            <option value="@plan.Id">@plan.SubscriptionPlanData.Name (@(((plan.SubscriptionPlanData.Phases[0].RecurringPriceMoney.Amount ?? 0) / 100.0).ToString("C2")) - @plan.SubscriptionPlanData.Phases[0].Cadence)</option>
-          }
+  <option value="@plan.Id">@plan.SubscriptionPlanData.Name (@(((plan.SubscriptionPlanData.Phases[0].RecurringPriceMoney.Amount ?? 0) / 100.0).ToString("C2")) - @plan.SubscriptionPlanData.Phases[0].Cadence)</option>
+}
         </InputSelect>
       </div>
     </div>

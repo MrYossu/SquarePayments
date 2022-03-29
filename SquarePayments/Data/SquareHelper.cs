@@ -88,6 +88,22 @@ public class SquareHelper {
     return subscriptionResponse.Subscription.Id;
   }
 
+  public async Task<List<Customer>> GetAllCustomers(int limit = 100) {
+    List<Customer> results = new();
+    ListCustomersResponse customerResponse = await _client.CustomersApi.ListCustomersAsync(limit: limit);
+    results.AddRange(customerResponse.Customers);
+    string cursor = customerResponse.Cursor;
+    while (!string.IsNullOrWhiteSpace(cursor)) {
+      customerResponse = await _client.CustomersApi.ListCustomersAsync(cursor, limit);
+      if (customerResponse.Customers == null) {
+        break;
+      }
+      results.AddRange(customerResponse.Customers);
+      cursor = customerResponse.Cursor;
+    }
+    return results;
+  }
+
   public async Task<DeleteCustomerResponse> DeleteCustomer(string id) =>
     await _client.CustomersApi.DeleteCustomerAsync(id);
 
