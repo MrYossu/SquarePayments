@@ -2,7 +2,6 @@
 using Pixata.Extensions;
 using Square;
 using Square.Models;
-using Environment = System.Environment;
 
 namespace SquarePayments.Data;
 
@@ -88,13 +87,37 @@ public class SquareHelper {
     return subscriptionResponse.Subscription.Id;
   }
 
-  public async Task<List<Customer>> GetAllCustomers(int limit = 100) {
+  public async Task<List<Customer>> GetAllCustomers() {
     List<Customer> results = new();
-    ListCustomersResponse customerResponse = await _client.CustomersApi.ListCustomersAsync(limit: limit);
+    ListCustomersResponse customerResponse = await _client.CustomersApi.ListCustomersAsync();
     results.AddRange(customerResponse.Customers);
     string cursor = customerResponse.Cursor;
     while (!string.IsNullOrWhiteSpace(cursor)) {
-      customerResponse = await _client.CustomersApi.ListCustomersAsync(cursor, limit);
+      customerResponse = await _client.CustomersApi.ListCustomersAsync(cursor);
+      if (customerResponse.Customers == null) {
+        break;
+      }
+      results.AddRange(customerResponse.Customers);
+      cursor = customerResponse.Cursor;
+    }
+    return results;
+  }
+
+  public async Task<List<Customer>> SearchCustomers(string email) {
+    var body = new SearchCustomersRequest.Builder()
+      .Query(new CustomerQuery.Builder()
+        .Filter(new CustomerFilter.Builder()
+          .EmailAddress(new CustomerTextFilter.Builder()
+            .Fuzzy(email)
+            .Build())
+          .Build())
+        .Build());
+    List<Customer> results = new();
+    SearchCustomersResponse customerResponse = await _client.CustomersApi.SearchCustomersAsync(body.Build());
+    results.AddRange(customerResponse.Customers);
+    string cursor = customerResponse.Cursor;
+    while (!string.IsNullOrWhiteSpace(cursor)) {
+      customerResponse = await _client.CustomersApi.SearchCustomersAsync(body.Cursor(cursor).Build());
       if (customerResponse.Customers == null) {
         break;
       }

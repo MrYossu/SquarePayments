@@ -46,6 +46,9 @@ public partial class Customers {
   private async Task ListCustomers() =>
     CustomerList = await SquareHelper.GetAllCustomers();
 
+  private async Task SearchCustomers() =>
+    CustomerList = await SquareHelper.SearchCustomers("bear.co.uk");
+
   public string NewCustomerMsg { get; set; } = "";
 
   private async Task CreateCustomer() {
