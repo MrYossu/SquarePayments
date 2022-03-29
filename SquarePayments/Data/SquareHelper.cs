@@ -1,4 +1,5 @@
 ﻿using Microsoft.JSInterop;
+using Pixata.Extensions;
 using Square;
 using Square.Models;
 using Environment = System.Environment;
@@ -82,10 +83,12 @@ public class SquareHelper {
     return cardResponse.Card.Id;
   }
 
-  public async Task<string> CreateSquareSubscription(string customerId, string cardId, string planId) {
+  public async Task<string> CreateSquareSubscription(string customerId, string cardId, string planId, int dayOfMonth = 0) {
+    DateTime start = dayOfMonth == 0 ? DateTime.Now : DateTime.Now.EndOfMonth().AddMilliseconds(2);
     CreateSubscriptionRequest subscriptionRequest = new CreateSubscriptionRequest.Builder(_data.LocationId, planId, customerId)
       .IdempotencyKey(Guid.NewGuid().ToString("N"))
       .CardId(cardId)
+      .StartDate(start.ToString("yyyy-MM-dd"))
       .Build();
     CreateSubscriptionResponse subscriptionResponse = await _client.SubscriptionsApi.CreateSubscriptionAsync(subscriptionRequest);
     return subscriptionResponse.Subscription.Id;
@@ -93,7 +96,7 @@ public class SquareHelper {
 
   public async Task<DeleteCustomerResponse> DeleteCustomer(string id) =>
     await _client.CustomersApi.DeleteCustomerAsync(id);
-  
+
   #endregion
 
   #region Deprecated

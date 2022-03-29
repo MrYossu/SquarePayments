@@ -63,7 +63,7 @@ public partial class Customers {
       Address address = SquareHelper.BuildAddress(Customer.Address1, Customer.Address2, Customer.Postcode, Customer.Country);
       string customerId = await SquareHelper.CreateSquareCustomer(Customer.FirstName, Customer.Surname, Customer.Email, Customer.Phone, address);
       string cardId = await SquareHelper.CreateSquareCard(Customer.FirstName, Customer.Surname, address, customerId);
-      string subscriptionId = await SquareHelper.CreateSquareSubscription(customerId, cardId, Customer.PlanId);
+      string subscriptionId = await SquareHelper.CreateSquareSubscription(customerId, cardId, Customer.PlanId, 1);
       NewCustomerMsg = $"Success: Id {subscriptionId}";
     }
     catch (ApiException ex) {
