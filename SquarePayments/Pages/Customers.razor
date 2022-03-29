@@ -1,6 +1,6 @@
 ﻿@page "/Customers"
-@using Square.Models
 @using Pixata.Extensions
+@using Square.Models
 <PageTitle>Customers</PageTitle>
 
 <h1>Customers</h1>
@@ -25,7 +25,7 @@
         <td>@c.GivenName</td>
         <td>@c.FamilyName</td>
         <td>@c.EmailAddress</td>
-        <td>@(c.Cards?.Any() ?? false ? c.Cards.Select(card=>$"{card.CardBrand} ends in {card.Last4}").JoinStr() : "")</td>
+        <td>@(c.Cards?.Any() ?? false ? c.Cards.Select(card => $"{card.CardBrand} ends in {card.Last4}").JoinStr() : "")</td>
         <td><button class="btn-sm" onclick="@(() => DeleteCustomer(c.Id))">Delete</button></td>
       </tr>
     }
@@ -34,6 +34,7 @@
 
 <fieldset style="border-top: 1px solid #000" class="mt-3">
   <legend>New customer</legend>
+  <p>This also stores the card details with Square and creates a subscription to the plan you choose. This assumes you have <a href="/Plans">created at least one plan</a>.</p>
   <EditForm Model="@Customer" OnSubmit="@CreateCustomer">
     <div class="row">
       <label class="col-2">First name</label>
@@ -42,6 +43,10 @@
     <div class="row">
       <label class="col-2">Surname</label>
       <div class="col-8"><InputText @bind-Value="@Customer.Surname" /></div>
+    </div>
+    <div class="row">
+      <label class="col-2">Phone</label>
+      <div class="col-8"><InputText @bind-Value="@Customer.Phone" /></div>
     </div>
     <div class="row">
       <label class="col-2">Email</label>
@@ -60,13 +65,19 @@
       <div class="col-2"><InputText @bind-Value="@Customer.Postcode" /></div>
       <div class="col-4 text-danger">This MUST match the postcode you enter in the card element below</div>
     </div>
-    <div class="row">
+    <div class="row mb-1">
       <label class="col-2">Country</label>
       <div class="col-8">GB</div>
     </div>
-    <div class="row">
-      <label class="col-2">Phone</label>
-      <div class="col-8"><InputText @bind-Value="@Customer.Phone" /></div>
+    <div class="row mb-2">
+      <label class="col-2">Plan</label>
+      <div class="col-8">
+        <InputSelect @bind-Value="@Customer.PlanId">
+          @foreach (CatalogObject plan in CatalogObjects) {
+            <option value="@plan.Id">@plan.SubscriptionPlanData.Name (@(((plan.SubscriptionPlanData.Phases[0].RecurringPriceMoney.Amount ?? 0) / 100.0).ToString("C2")) - @plan.SubscriptionPlanData.Phases[0].Cadence)</option>
+          }
+        </InputSelect>
+      </div>
     </div>
     <div class="row">
       <div class="col-2"> </div>

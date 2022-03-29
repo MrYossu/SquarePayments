@@ -12,4 +12,5 @@ public class CustomerDto {
   public string Address2 { get; set; } = "";
   public string Postcode { get; set; } = "";
   public string Country { get; set; } = "GB";
+  public string PlanId { get; set; } = "";
 }

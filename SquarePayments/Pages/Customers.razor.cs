@@ -23,9 +23,13 @@ public partial class Customers : IAsyncDisposable {
   public CustomerDto Customer { get; set; } = new();
   public List<Customer> CustomerList { get; set; } = new();
   public string CustomerListMsg { get; set; } = "";
+  public List<CatalogObject> CatalogObjects { get; set; } = new();
 
-  protected override void OnInitialized() =>
+  protected override async Task OnInitializedAsync() {
     _squareClient = _squareHelper.GetSquareClient();
+    await GetPlans();
+    Customer.PlanId = CatalogObjects.First().Id;
+  }
 
   protected override async Task OnAfterRenderAsync(bool firstRender) {
     if (firstRender) {
@@ -36,9 +40,15 @@ public partial class Customers : IAsyncDisposable {
         StateHasChanged();
       }
       catch (Exception ex) {
+        NewCustomerMsg = $"Exception: {ex.Message}";
         StateHasChanged();
       }
     }
+  }
+
+  private async Task GetPlans() {
+    ListCatalogResponse response = await _squareClient.CatalogApi.ListCatalogAsync();
+    CatalogObjects = (response.Objects ?? new List<CatalogObject>()).ToList();
   }
 
   private async Task ListCustomers() {
@@ -58,7 +68,7 @@ public partial class Customers : IAsyncDisposable {
   private async Task CreateCustomer() {
     NewCustomerMsg = "Please wait...";
     try {
-      Address? address = new Address.Builder()
+      Address address = new Address.Builder()
         .AddressLine1(Customer.Address1)
         .AddressLine2(Customer.Address2)
         .PostalCode(Customer.Postcode)
@@ -73,22 +83,30 @@ public partial class Customers : IAsyncDisposable {
         .PhoneNumber(Customer.Phone)
         .Build();
       CreateCustomerResponse customerResponse = await _squareClient.CustomersApi.CreateCustomerAsync(customerRequest);
+      string customerId = customerResponse.Customer.Id;
       string sourceId = await _squareJs.InvokeAsync<string>("getSquareCardToken", _squareCard);
       // NOTE - The following will throw an error if the postcode/zip used in the card element does not match the one you use in the address
       CreateCardRequest cardRequest = new CreateCardRequest.Builder(Guid.NewGuid().ToString(), sourceId,
           new Card.Builder()
             .CardholderName($"{Customer.FirstName} {Customer.Surname}")
             .BillingAddress(address)
-            .CustomerId(customerResponse.Customer.Id)
+            .CustomerId(customerId)
             .ReferenceId($"{Customer.FirstName}{Customer.Surname}")
             .Build())
         .Build();
       CreateCardResponse cardResponse = await _squareClient.CardsApi.CreateCardAsync(cardRequest);
-      NewCustomerMsg = "Success";
+      string cardId = cardResponse.Card.Id;
+      CreateSubscriptionRequest subscriptionRequest = new CreateSubscriptionRequest.Builder(_squareHelper.LocationId, Customer.PlanId, customerId)
+        .IdempotencyKey(Guid.NewGuid().ToString("N"))
+        .CardId(cardId)
+        .Build();
+      CreateSubscriptionResponse subscriptionResponse = await _squareClient.SubscriptionsApi.CreateSubscriptionAsync(subscriptionRequest);
+      string subscriptionId = subscriptionResponse.Subscription.Id;
+      NewCustomerMsg = $"Success: Id {subscriptionId}";
     }
     catch (ApiException ex) {
       NewCustomerMsg = $"Error: {string.Join("", ex.Errors.Select(e => $"({e.Field}) {e.Detail}"))}";
-    } 
+    }
     catch (Exception ex) {
       NewCustomerMsg = $"Error: {ex.Message}";
     }

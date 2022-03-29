@@ -1,0 +1,71 @@
+﻿@page "/Plans"
+
+<PageTitle>Subscription plans</PageTitle>
+<h1>Subscription plans</h1>
+
+<h2>Current plans</h2>
+@if (Loading) {
+  <p>Loading plans, please wait...</p>
+} else {
+  @if (CatalogObjects.Any()) {
+    <table class="table w-50">
+      <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Cadence</th>
+        <th>Amount</th>
+        <th></th>
+      </tr>
+      @foreach (var plan in CatalogObjects) {
+        <tr>
+          <td>@plan.Id</td>
+          <td>@plan.SubscriptionPlanData.Name</td>
+          <td>@plan.SubscriptionPlanData.Phases[0].Cadence</td>
+          <td>@(((plan.SubscriptionPlanData.Phases[0].RecurringPriceMoney.Amount ?? 0) / 100.0).ToString("C2"))</td>
+          <td><button onclick="@(() => DeletePlan(plan.Id))">Delete</button></td>
+        </tr>
+      }
+    </table>
+  } else {
+    <p>You don't currently have any plans. Why not create one below?</p>
+  }
+}
+
+<fieldset style="border-top: 1px solid #000" class="mt-3">
+  <legend>Create a new plan</legend>
+  <EditForm Model="@PlanModel" OnSubmit="@CreatePlan">
+    <div class="row mb-2">
+      <label class="col-2">Plan name</label>
+      <div class="col-8">
+        <InputText @bind-Value="@PlanModel.PlanName"></InputText>
+      </div>
+    </div>
+
+    <div class="row mb-2">
+      <label class="col-2">Cadence</label>
+      <div class="col-8">
+        <InputSelect @bind-Value="@PlanModel.Cadence">
+          @foreach ((string Id, string Description) cadence in Cadences) {
+            <option value="@cadence.Id">@cadence.Description</option>
+          }
+        </InputSelect>
+      </div>
+    </div>
+
+    <div class="row mb-2">
+      <label class="col-2">Cost (&pound;)</label>
+      <div class="col-8">
+        <InputNumber @bind-Value="@PlanModel.Cost" />
+      </div>
+    </div>
+
+    <div class="row mb-2">
+      <div class="col-2"></div>
+      <div class="col-8">
+        <button>Create</button>
+      </div>
+    </div>
+
+  </EditForm>
+  <p class="mt-2 text-warning">@Msg</p>
+</fieldset>
