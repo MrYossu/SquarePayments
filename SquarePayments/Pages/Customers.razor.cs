@@ -74,11 +74,7 @@ public partial class Customers : IAsyncDisposable {
         .Build();
       CreateCustomerResponse customerResponse = await _squareClient.CustomersApi.CreateCustomerAsync(customerRequest);
       string sourceId = await _squareJs.InvokeAsync<string>("getSquareCardToken", _squareCard);
-      // For sandbox testing, we can skip calling the SDK and use the following source Id...
-      //sourceId = "cnon:card-nonce-ok";
-      // We should pass sourceId as the second parameter below, but it throws an error when we do that.
-      // Actually, it throws an error even with the sandbox source Id (see bullet point 2b in section 1.3
-      // of the subscription doc https://developer.squareup.com/docs/subscriptions-api/walkthrough#step-13-create-customers-in-the-sellers-customer-directory)
+      // NOTE - The following will throw an error if the postcode/zip used in the card element does not match the one you use in the address
       CreateCardRequest cardRequest = new CreateCardRequest.Builder(Guid.NewGuid().ToString(), sourceId,
           new Card.Builder()
             .CardholderName($"{Customer.FirstName} {Customer.Surname}")
