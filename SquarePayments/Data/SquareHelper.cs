@@ -104,7 +104,7 @@ public class SquareHelper {
   }
 
   public async Task<List<Customer>> SearchCustomers(string email) {
-    var body = new SearchCustomersRequest.Builder()
+    SearchCustomersRequest.Builder body = new SearchCustomersRequest.Builder()
       .Query(new CustomerQuery.Builder()
         .Filter(new CustomerFilter.Builder()
           .EmailAddress(new CustomerTextFilter.Builder()
