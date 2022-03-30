@@ -130,6 +130,30 @@ public class SquareHelper {
   public async Task<DeleteCustomerResponse> DeleteCustomer(string id) =>
     await _client.CustomersApi.DeleteCustomerAsync(id);
 
+  public async Task<(string OrderId, string PaymentId)> OrderWithPayment(string customerId, List<OrderLineItem> lineItems, string reference) {
+    CreateOrderRequest orderRequest = new CreateOrderRequest.Builder()
+      .Order(new Order.Builder(_data.LocationId)
+        .CustomerId(customerId)
+        .LineItems(lineItems)
+        .Build())
+      .IdempotencyKey(Guid.NewGuid().ToString())
+      .Build();
+    CreateOrderResponse orderResponse = await _client.OrdersApi.CreateOrderAsync(orderRequest);
+    string orderId = orderResponse.Order.Id;
+    long total = lineItems.Select(li => Convert.ToInt32(li.Quantity) * (li.BasePriceMoney.Amount ?? 0)).Sum(t => t);
+    CreatePaymentRequest paymentRequest = new CreatePaymentRequest.Builder(
+        await _squareJs.InvokeAsync<string>("getSquareCardToken", _squareCard), Guid.NewGuid().ToString(), new Money.Builder()
+          .Amount(total)
+          .Currency("GBP")
+          .Build())
+      .Autocomplete(true)
+      .OrderId(orderId)
+      .ReferenceId(reference)
+      .Build();
+    CreatePaymentResponse result = await _client.PaymentsApi.CreatePaymentAsync(paymentRequest);
+    return (orderId, result.Payment.Id);
+  }
+
   #endregion
 
   #region Deprecated

@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using Square;
 using Square.Exceptions;
 using Square.Models;
@@ -7,12 +6,9 @@ using SquarePayments.Data;
 
 namespace SquarePayments.Pages;
 
-public partial class OrderAndPay : IAsyncDisposable {
+public partial class OrderAndPay {
   [Inject]
-  private SquareHelper _squareHelper { get; set; }
-
-  [Inject]
-  private IJSRuntime _js { get; set; }
+  private SquareHelper SquareHelper { get; set; } = null!;
 
   private SquareClient _squareClient = null!;
   public List<Customer> Customers { get; set; } = new();
@@ -21,26 +17,21 @@ public partial class OrderAndPay : IAsyncDisposable {
   private int _medium;
   private int _enormous;
   public double Total { get; set; }
-  private IJSObjectReference _squareJs = null!;
-  private IJSObjectReference _squareCard = null!;
-  private readonly Square.Environment _environment = Square.Environment.Sandbox;
   private readonly string _elementId = "SquareCardPayment" + Guid.NewGuid().ToString("N");
   public bool SquareLoaded { get; set; }
   public string PaymentMsg { get; set; } = "Please choose some chocolate before ordering";
 
   protected override async Task OnInitializedAsync() {
-    _squareClient = _squareHelper.GetSquareClient();
+    _squareClient = SquareHelper.GetSquareClient();
     List<Customer> customers = (await _squareClient.CustomersApi.ListCustomersAsync()).Customers.ToList();
-    customers.Insert(0, new Customer(id: "", givenName: "(please choose)"));
+    customers.Insert(0, new("", givenName: "(please choose)"));
     Customers = customers;
   }
 
   protected override async Task OnAfterRenderAsync(bool firstRender) {
     if (firstRender) {
       try {
-        await _js.InvokeAsync<IJSObjectReference>("import", _environment == Square.Environment.Sandbox ? "https://sandbox.web.squarecdn.com/v1/square.js" : "https://web.squarecdn.com/v1/square.js");
-        _squareJs = await _js.InvokeAsync<IJSObjectReference>("import", "/Square.js");
-        _squareCard = await _squareJs.InvokeAsync<IJSObjectReference>("addSquareCardPayment", _elementId, _squareHelper.AppId, _squareHelper.LocationId);
+        await SquareHelper.SetUpCard(_elementId);
         SquareLoaded = true;
         StateHasChanged();
       }
@@ -76,6 +67,7 @@ public partial class OrderAndPay : IAsyncDisposable {
     if (_small > 0) {
       lineItems.Add(new OrderLineItem.Builder(_small.ToString())
         .Name("Bar of chocolate (small)")
+        .Quantity(_small.ToString())
         .BasePriceMoney(new Money.Builder()
           .Amount(100L)
           .Currency("GBP")
@@ -85,6 +77,7 @@ public partial class OrderAndPay : IAsyncDisposable {
     if (_medium > 0) {
       lineItems.Add(new OrderLineItem.Builder(_medium.ToString())
         .Name("Bar of chocolate (medium)")
+        .Quantity(_medium.ToString())
         .BasePriceMoney(new Money.Builder()
           .Amount(200L)
           .Currency("GBP")
@@ -94,48 +87,23 @@ public partial class OrderAndPay : IAsyncDisposable {
     if (_enormous > 0) {
       lineItems.Add(new OrderLineItem.Builder(_enormous.ToString())
         .Name("Bar of chocolate (enormous)")
+        .Quantity(_enormous.ToString())
         .BasePriceMoney(new Money.Builder()
           .Amount(350L)
           .Currency("GBP")
           .Build())
         .Build());
     }
-    Order order = new Order.Builder(_squareHelper.LocationId)
-      .CustomerId(CustomerId)
-      .LineItems(lineItems)
-      .Build();
-
-    CreateOrderRequest orderRequest = new CreateOrderRequest.Builder()
-      .Order(order)
-      .IdempotencyKey(Guid.NewGuid().ToString())
-      .Build();
 
     try {
-      CreateOrderResponse orderResponse = await _squareClient.OrdersApi.CreateOrderAsync(orderRequest);
-      string orderId = orderResponse.Order.Id;
-      CreatePaymentRequest paymentRequest = new CreatePaymentRequest.Builder(
-          await _squareJs.InvokeAsync<string>("getSquareCardToken", _squareCard), Guid.NewGuid().ToString(), new Money.Builder()
-            .Amount((int)(Total * 100))
-            .Currency("GBP")
-            .Build())
-        .Autocomplete(true)
-        .OrderId(orderId)
-        .ReferenceId($"ChocShop-{DateTime.Now.ToString("yymmddHHmmss")}")
-        .Build();
-      CreatePaymentResponse result = await _squareClient.PaymentsApi.CreatePaymentAsync(paymentRequest);
-      PaymentMsg = $"Success, order Id: {orderId}";
+      (string orderId, string paymentId) = await SquareHelper.OrderWithPayment(CustomerId, lineItems, $"ChocShop-{DateTime.Now.ToString("yymmddHHmmss")}");
+      PaymentMsg = $"Success, order Id: {orderId}, payment Id: {paymentId}";
     }
     catch (ApiException ex) {
       PaymentMsg = "ApiException: " + string.Join("", ex.Errors.Select(e => e.Detail));
     }
     catch (Exception ex) {
       PaymentMsg = $"HTTP error(s): {ex.Message}";
-    }
-  }
-
-  public async ValueTask DisposeAsync() {
-    if (_squareJs != null) {
-      await _squareJs.DisposeAsync();
     }
   }
 }
