@@ -109,6 +109,9 @@ public class SquareHelper {
         .Build());
     List<Customer> results = new();
     SearchCustomersResponse customerResponse = await _client.CustomersApi.SearchCustomersAsync(body.Build());
+    if (customerResponse.Customers == null) {
+      return results;
+    }
     results.AddRange(customerResponse.Customers);
     string cursor = customerResponse.Cursor;
     while (!string.IsNullOrWhiteSpace(cursor)) {
