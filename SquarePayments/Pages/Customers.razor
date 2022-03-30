@@ -6,7 +6,7 @@
 <h1>Customers</h1>
 
 <button @onclick="@ListCustomers">List customers</button>
-<button @onclick="@SearchCustomers">Search customers</button>
+<button @onclick="@SearchCustomers">Search customers</button> by (email) <input @bind-value="@EmailSearch"/>
 
 <div class="text-danger">@CustomerListMsg</div>
 

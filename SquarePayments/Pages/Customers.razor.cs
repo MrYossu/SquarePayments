@@ -16,6 +16,7 @@ public partial class Customers {
   private readonly string _elementId = "SquareCardPayment" + Guid.NewGuid().ToString("N");
   public CustomerDto Customer { get; set; } = new();
   public List<Customer> CustomerList { get; set; } = new();
+  public string EmailSearch { get; set; } = "";
   public string CustomerListMsg { get; set; } = "";
   public List<CatalogObject> CatalogObjects { get; set; } = new();
 
@@ -47,7 +48,7 @@ public partial class Customers {
     CustomerList = await SquareHelper.GetAllCustomers();
 
   private async Task SearchCustomers() =>
-    CustomerList = await SquareHelper.SearchCustomers("bear.co.uk");
+    CustomerList = await SquareHelper.SearchCustomers(EmailSearch);
 
   public string NewCustomerMsg { get; set; } = "";
 
