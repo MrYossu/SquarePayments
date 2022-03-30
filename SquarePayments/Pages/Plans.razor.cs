@@ -81,24 +81,6 @@ public partial class Plans {
       Msg = $"Error: {ex.Message}";
     }
   }
-
-  private async Task DeletePlan(string id) {
-    try {
-      DeleteCatalogObjectResponse result = await _squareClient.CatalogApi.DeleteCatalogObjectAsync(id);
-      if (result.Errors.Any()) {
-        Msg = $"Error: {string.Join("", result.Errors.Select(e => $"({e.Field}) {e.Detail}"))}";
-
-      } else {
-        CatalogObjects.Remove(CatalogObjects.Single(co => co.Id == id));
-        Msg = "Plan removed";
-      }
-    } catch (ApiException ex) {
-      Msg = $"ApiException: {string.Join("", ex.Errors.Select(e => $"({e.Field}) {e.Detail}"))}";
-    } catch (Exception ex) {
-      Msg = $"Exception: {ex.Message}";
-    }
-    StateHasChanged();
-  }
 }
 
 public class PlanModel {

@@ -14,7 +14,6 @@
         <th>Name</th>
         <th>Cadence</th>
         <th>Amount</th>
-        <th></th>
       </tr>
       @foreach (var plan in CatalogObjects) {
         <tr>
@@ -22,7 +21,6 @@
           <td>@plan.SubscriptionPlanData.Name</td>
           <td>@plan.SubscriptionPlanData.Phases[0].Cadence</td>
           <td>@(((plan.SubscriptionPlanData.Phases[0].RecurringPriceMoney.Amount ?? 0) / 100.0).ToString("C2"))</td>
-          <td><button onclick="@(() => DeletePlan(plan.Id))">Delete</button></td>
         </tr>
       }
     </table>
