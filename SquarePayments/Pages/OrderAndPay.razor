@@ -7,7 +7,7 @@
   <div class="row mb-2">
     <div class="col-3">Customer</div>
     <div class="col-6">
-      <select class="form-control" @onchange="@(e => CustomerId = e.Value.ToString() ?? "")">
+      <select class="form-select" @onchange="@(e => CustomerId = e.Value.ToString() ?? "")">
         @foreach (Customer c in Customers) {
           <option value="@c.Id">@c.GivenName @c.FamilyName</option>
         }
@@ -19,7 +19,7 @@
     <div class="row mb-2">
       <div class="col-3">Small chocolate bars - &pound;1.00 each</div>
       <div class="col-6">
-        <select class="form-control" @onchange="@(e => UpdateTotal('s', e.Value.ToString() ?? ""))">
+        <select class="form-select" @onchange="@(e => UpdateTotal('s', e.Value.ToString() ?? ""))">
           <option value="0" selected="selected">0</option>
           @for (int i = 1; i < 6; i++) {
             <option value="@i">@i</option>
@@ -31,7 +31,7 @@
     <div class="row mb-2">
       <div class="col-3">Medium chocolate bars - &pound;2.00 each</div>
       <div class="col-6">
-        <select class="form-control" @onchange="@(e => UpdateTotal('m', e.Value.ToString() ?? ""))">
+        <select class="form-select" @onchange="@(e => UpdateTotal('m', e.Value.ToString() ?? ""))">
           <option value="0" selected="selected">0</option>
           @for (int i = 1; i < 6; i++) {
             <option value="@i">@i</option>
@@ -43,7 +43,7 @@
     <div class="row mb-2">
       <div class="col-3">Enormous chocolate bars - &pound;3.50 each</div>
       <div class="col-6">
-        <select class="form-control" @onchange="@(e => UpdateTotal('e', e.Value.ToString() ?? ""))">
+        <select class="form-select" @onchange="@(e => UpdateTotal('e', e.Value.ToString() ?? ""))">
           <option value="0" selected="selected">0</option>
           @for (int i = 1; i < 6; i++) {
             <option value="@i">@i</option>

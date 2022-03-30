@@ -24,11 +24,6 @@ public class SquareHelper {
       .Build();
   }
 
-  private Square.Environment GetEnvironment =>
-    _data.Environment == "production"
-      ? Square.Environment.Production
-      : Square.Environment.Sandbox;
-
   #region API methods
 
   public static Address BuildAddress(string address1, string address2, string postcode, string country) {
@@ -56,7 +51,7 @@ public class SquareHelper {
 
   public async Task SetUpCard(string elementId) {
     _elementId = elementId;
-    await _js.InvokeAsync<IJSObjectReference>("import", GetEnvironment == Square.Environment.Sandbox ? "https://sandbox.web.squarecdn.com/v1/square.js" : "https://web.squarecdn.com/v1/square.js");
+    await _js.InvokeAsync<IJSObjectReference>("import", _data.Environment == "production" ? "https://web.squarecdn.com/v1/square.js" : "https://sandbox.web.squarecdn.com/v1/square.js");
     _squareJs = await _js.InvokeAsync<IJSObjectReference>("import", JsUri);
     _squareCard = await _squareJs.InvokeAsync<IJSObjectReference>("addSquareCardPayment", _elementId, _data.AppId, _data.LocationId);
   }
