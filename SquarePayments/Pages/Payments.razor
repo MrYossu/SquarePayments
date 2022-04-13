@@ -71,8 +71,8 @@
       .Currency("GBP")
       .Build();
 
-    CreatePaymentRequest body = new CreatePaymentRequest.Builder(
-      await _squareJs.InvokeAsync<string>("getSquareCardToken", _squareCard), Guid.NewGuid().ToString(), amountMoney)
+    string token = await _squareJs.InvokeAsync<string>("getSquareCardToken", _squareCard);
+    CreatePaymentRequest body = new CreatePaymentRequest.Builder(token, Guid.NewGuid().ToString(), amountMoney)
       .Autocomplete(true)
       .ReferenceId($"Test{DateTime.Now.ToString("yymmddHHmmss")}")
       .Note(string.IsNullOrWhiteSpace(_message) ? "Don't know what this was" : _message)
