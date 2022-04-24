@@ -72,9 +72,20 @@
       .Build();
 
     string sourceId = await _squareJs.InvokeAsync<string>("getSquareCardToken", _squareCard);
+    // NOTE - The following data would need to be 
+    var contact = new {
+      addressLines = new[] { "123 Main Street", "Apartment 1" },
+      familyName = "Doe",
+      givenName = "John",
+      email = "jondoe@gmail.com",
+      country = "GB",
+      city = "London"
+    };
+    string verificationToken = await _squareJs.InvokeAsync<string>("verifyTheBuyer", _squareHelper.AppId, _squareHelper.LocationId, sourceId, (Amount / 100.0).ToString("F2"), contact);
     CreatePaymentRequest body = new CreatePaymentRequest.Builder(sourceId, Guid.NewGuid().ToString(), amountMoney)
       .Autocomplete(true)
       .ReferenceId($"Test{DateTime.Now.ToString("yymmddHHmmss")}")
+      .VerificationToken(verificationToken)
       .Note(string.IsNullOrWhiteSpace(_message) ? "Don't know what this was" : _message)
       .Build();
 
