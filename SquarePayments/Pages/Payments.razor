@@ -72,7 +72,7 @@
       .Build();
 
     string sourceId = await _squareJs.InvokeAsync<string>("getSquareCardToken", _squareCard);
-    // NOTE - The following data would need to be 
+    // NOTE - The following data would need to be captured from the customer
     var contact = new {
       addressLines = new[] { "123 Main Street", "Apartment 1" },
       familyName = "Doe",
